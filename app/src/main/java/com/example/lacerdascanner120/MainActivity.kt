@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,9 +55,14 @@ class MainActivity : ComponentActivity() {
                 .show()
         } else {
             val currentDateTime = Calendar.getInstance().time //Pegando hora atual
-            val formattedDateTime = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(currentDateTime) //Organizando data e hora
+            val formattedDateTime = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(currentDateTime) //Pegando data
+            val formattedDate = SimpleDateFormat("dd/MM/yyyy").format(currentDateTime) // Organizando data
+            val formattedTime = SimpleDateFormat("HH:mm:ss").format(currentDateTime) // Organizando hora
 
-            val qrCodeWithDate = "${formattedDateTime} - ${result.contents}" // Adicionando a data e hora ao Qr
+
+
+
+            val qrCodeWithDate = "${formattedDate}, $formattedTime -  ${result.contents}" // Adicionando a data e hora ao Qr
             qrCodeHistory.add(qrCodeWithDate)  // Adiciona o QR Code à lista
         }
     }
@@ -123,6 +129,7 @@ class MainActivity : ComponentActivity() {
             // Abre o OutputStream para o arquivo escolhido pelo usuário
             contentResolver.openOutputStream(uri)?.use { outputStream ->
                 OutputStreamWriter(outputStream).use { writer ->
+                    writer.write("Data, Hora, NomeFuncionario, Matricula\n")           //Aqui separaça as informações entre "," e colunas na planilha
                     writer.write(csvContent)
                 }
             }
@@ -145,6 +152,7 @@ class MainActivity : ComponentActivity() {
 
 
     //Barra inferior de opções
+    // Barra inferior de opções
     @Composable
     fun MainScreen(
         qrCodeHistory: List<String>,
@@ -152,6 +160,7 @@ class MainActivity : ComponentActivity() {
         onClearHistory: () -> Unit
     ) {
         val context = LocalContext.current  // Acessa o contexto local
+
         Scaffold(
             bottomBar = {
                 BottomAppBar {
@@ -161,12 +170,11 @@ class MainActivity : ComponentActivity() {
                     ) {
                         IconButton(
                             onClick = onClearHistory,
-
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete, // Ícone de "limpar"
                                 contentDescription = "Limpar Histórico",
-                                modifier = Modifier.size(64.dp),// Tamanho do ícone
+                                modifier = Modifier.size(64.dp), // Tamanho do ícone
                                 tint = Color(0xFF048cd4)
                             )
                         }
@@ -174,7 +182,7 @@ class MainActivity : ComponentActivity() {
                             onClick = onScanQrCode,
                         ) {
                             Icon(
-                                imageVector = Icons.Default.PhotoCamera , // Ícone de "escanear"
+                                imageVector = Icons.Default.PhotoCamera, // Ícone de "escanear"
                                 contentDescription = "Escanear QR Code",
                                 modifier = Modifier.size(64.dp), // Tamanho do ícone
                                 tint = Color(0xFF048cd4)
@@ -182,7 +190,6 @@ class MainActivity : ComponentActivity() {
                         }
                         IconButton(
                             onClick = { promptSaveCsv() },
-
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Send, // Ícone de "exportar"
@@ -216,12 +223,22 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp),
-
                             ) {
-                                Text(
-                                    text = qrCodeWithDate, //Exibe o QrCode com data
-                                    modifier = Modifier.padding(16.dp)
-                                )
+                                // Usando Column para exibir o conteúdo do QR e a data/hora em linhas separadas
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    // Exibe o QR Code
+                                    Text(
+                                        text = qrCodeWithDate.split(" - ")[1], // Exibe o conteúdo do QR Code (parte após " - ")
+                                        modifier = Modifier.padding(bottom = 4.dp) // Espaçamento abaixo do QR Code
+                                    )
+
+                                    // Exibe a data e hora
+                                    Text(
+                                        text = qrCodeWithDate.split(" - ")[0], // Exibe a data e hora (parte antes de " - ")
+                                        modifier = Modifier.padding(top = 4.dp), // Espaçamento acima da data
+                                        style = androidx.compose.ui.text.TextStyle(color = Color.Gray)
+                                    )
+                                }
                             }
                         }
                     }
@@ -229,6 +246,7 @@ class MainActivity : ComponentActivity() {
             }
         )
     }
+
 }
 
 
