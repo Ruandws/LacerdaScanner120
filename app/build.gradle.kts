@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation (libs.androidx.material.icons.extended)
+    implementation ("androidx.activity:activity-ktx:1.6.0") // ou mais recente
+    implementation ("androidx.core:core-ktx:1.9.0") // ou mais recente
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
