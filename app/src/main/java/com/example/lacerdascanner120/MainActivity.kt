@@ -14,9 +14,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    //----------Lógica do QRCode---------//
+                            //----------Lógica do QRCode---------//
     @SuppressLint("SimpleDateFormat")
     private var barCodeLauncher = registerForActivityResult(ScanContract()) { result ->
         if (result.contents == null) {
@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
             val formattedDate = SimpleDateFormat("dd/MM/yyyy").format(currentDateTime) // Organizando data
             val formattedTime = SimpleDateFormat("HH:mm:ss").format(currentDateTime) // Organizando hora
 
-            val qrCodeWithDate = "$formattedDate, $formattedTime - ${result.contents}"
+            val qrCodeWithDate = "${result.contents} - $formattedDate, $formattedTime"
             qrCodeHistory.add(qrCodeWithDate)
         }
     }
@@ -110,8 +110,7 @@ class MainActivity : ComponentActivity() {
             requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
         }
     }
-
-    //-----------Lógica do Histórico--------//
+             //-----------Lógica do Histórico--------//
     private var qrCodeHistory = mutableStateListOf<String>() // Lista reativa para o histórico
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,7 +123,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    //----------Lógica do Export CSV-----//
+                            //----------Lógica do Export CSV-----//
     private val createFileLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/csv")
     ) { uri ->
@@ -132,20 +131,32 @@ class MainActivity : ComponentActivity() {
             exportToCSV(uri) // Passa a URI escolhida pelo usuário para a função de exportação
         }
     }
-
+    // Export
     private fun exportToCSV(uri: Uri) {
-        val csvContent = qrCodeHistory.joinToString("\n") { it }
+        val nomeDoEvento = eventText.value.trim()
+
+        // Verifica se o nome do evento foi preenchido
+        if (nomeDoEvento.isEmpty()) {
+            Toast.makeText(this, "Por favor, insira o nome do evento antes de exportar.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val csvContent = qrCodeHistory.joinToString("\n") { qrCodeWithDate ->
+            val parts = qrCodeWithDate.split(" - ", limit = 2)
+            if (parts.size == 2) {
+                "$nomeDoEvento, ${parts[0]}, ${parts[1]}"  //
+            } else {
+                "$nomeDoEvento, $qrCodeWithDate"
+            }
+        }
 
         try {
-            // Abre o OutputStream para o arquivo escolhido pelo usuário
             contentResolver.openOutputStream(uri)?.use { outputStream ->
                 OutputStreamWriter(outputStream).use { writer ->
-                    writer.write("Data, Hora, NomeFuncionario, Matricula\n")  // Aqui separaça as informações entre "," e colunas na planilha
+                    writer.write("Evento, Funcionario, Matricula, Data, Hora\n") // Cabeçalho atualizado
                     writer.write(csvContent)
                 }
             }
-
-            // Exibe uma mensagem de sucesso
             Toast.makeText(this, "QR Codes exportados para $uri", Toast.LENGTH_SHORT).show()
         } catch (e: IOException) {
             e.printStackTrace()
@@ -153,16 +164,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Função para iniciar o seletor de arquivos para salvar o CSV
+    // Função para iniciar o seletor de arquivos para salvar o CSV (Obriga o usuário a dizer o Evento)
     private fun promptSaveCsv() {
-        // Nome do arquivo desejado, que será mostrado ao usuário
-        val fileName = "qr_codes.csv"  // Nome do arquivo sugerido
+        if (eventText.value.trim().isEmpty()) {
+            Toast.makeText(this, "Por favor, insira o nome do evento antes de exportar.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        // Lança o seletor de arquivo para o usuário escolher onde salvar
+        val fileName = "qr_codes.csv"
         createFileLauncher.launch(fileName)
     }
 
-    //Barra inferior de opções
+                            //---------------Barra Inferior de Opções-----------//
     @Composable
     fun MainScreen(
         qrCodeHistory: List<String>,
@@ -203,7 +216,7 @@ class MainActivity : ComponentActivity() {
                             onClick = { promptSaveCsv() },
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Send, // Ícone de "exportar"
+                                imageVector = Icons.AutoMirrored.Filled.Send, // Ícone de "exportar"
                                 contentDescription = "Exportar para CSV",
                                 modifier = Modifier.size(64.dp), // Tamanho do ícone
                                 tint = Color(0xFF048cd4)
@@ -268,26 +281,35 @@ class MainActivity : ComponentActivity() {
                     } else {
                         // Exibe os QR Codes lidos
                         items(qrCodeHistory) { qrCodeWithDate ->
+                            val parts = qrCodeWithDate.split(" - ", limit = 2)
+
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp)
                             ) {
-                                // Exibe o conteúdo do QR Code com data/hora
                                 Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        text = qrCodeWithDate.split(" - ")[1], // Exibe o conteúdo do QR Code (parte após " - ")
-                                        modifier = Modifier.padding(bottom = 4.dp) // Espaçamento abaixo do QR Code
-                                    )
+                                    if (parts.size == 2) {
+                                        // Exibir o QR Code primeiro
+                                        Text(
+                                            text = parts[0], // QR Code
+                                            modifier = Modifier.padding(bottom = 4.dp)
+                                        )
 
-                                    Text(
-                                        text = qrCodeWithDate.split(" - ")[0], // Exibe a data e hora (parte antes de " - ")
-                                        modifier = Modifier.padding(top = 4.dp), // Espaçamento acima da data
-                                        style = androidx.compose.ui.text.TextStyle(color = Color.Gray)
-                                    )
+                                        // Exibir a data e hora depois
+                                        Text(
+                                            text = parts[1], // Data e hora
+                                            modifier = Modifier.padding(top = 4.dp),
+                                            style = androidx.compose.ui.text.TextStyle(color = Color.Gray)
+                                        )
+                                    } else {
+                                        // Caso algum dado não esteja corretamente formatado
+                                        Text(text = qrCodeWithDate)
+                                    }
                                 }
                             }
                         }
+
                     }
                 }
             }
