@@ -6,5 +6,5 @@ Protótipo:
 
 
 Produto Final:
-![image](https://github.com/user-attachments/assets/12a0d0ca-4a0e-40c5-8a62-45be6379e7ef)
-![image](https://github.com/user-attachments/assets/4a352f1a-0dbc-4561-a208-1b77b99cd0ec)
+![image](https://github.com/user-attachments/assets/4ccde841-0363-4334-aee0-3f0d2099dbe7)
+
