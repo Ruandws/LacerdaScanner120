@@ -1,35 +1,49 @@
 package com.example.lacerdascanner120
-
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -41,7 +55,7 @@ class EventNameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            EventNameScreen { eventName ->
+            EventNameScreen { eventName, supervisorName ->
                 // Navegar para MainActivity
                 val intent = Intent(this@EventNameActivity, MainActivity::class.java)
                 startActivity(intent)
@@ -50,113 +64,165 @@ class EventNameActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun EventNameScreen(onEventNameEntered: (String) -> Unit) {
+    fun EventNameScreen(onEventNameEntered: (String, String) -> Unit) {
         var eventName by remember { mutableStateOf(TextFieldValue("")) }
+        var supervisorName by remember { mutableStateOf(TextFieldValue("")) }
         val context = LocalContext.current
         val keyboardController = LocalSoftwareKeyboardController.current
+        var isVisible by remember { mutableStateOf(false) }
+
+        LaunchedEffect(Unit) {
+            isVisible = true
+        }
+
+        val scale by animateFloatAsState(targetValue = if (isVisible) 1f else 0.8f)
+        val alpha by animateFloatAsState(targetValue = if (isVisible) 1f else 0f)
+
+        val regex = remember { Regex("[^a-zA-Z0-9 ]") } // Pré-compila a expressão regular
 
         fun filtrarCaracteres(texto: String): Pair<String, Boolean> {
-            val regex = Regex("[^a-zA-Z0-9 ]")
             val textoFiltrado = regex.replace(texto, "")
             return Pair(textoFiltrado, textoFiltrado != texto)
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = MaterialTheme.colorScheme.surface
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.bsbappiconstart),
-                    contentDescription = "Ícone de casa",
-                    modifier = Modifier.size(48.dp)
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bsbappiconstart),
+                        contentDescription = "Ícone de casa",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .scale(scale)
+                            .alpha(alpha)
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Text(
+                        text = "Novo Evento",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .scale(scale)
+                            .alpha(alpha)
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Text(
+                        text = "Insira os detalhes do evento para continuar.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .scale(scale)
+                            .alpha(alpha)
+                    )
+                }
+
+                OutlinedTextField(
+                    value = eventName,
+                    onValueChange = { newValue ->
+                        val (filteredText, modified) = filtrarCaracteres(newValue.text)
+                        eventName = newValue.copy(text = filteredText)
+                        if (modified) {
+                            Toast.makeText(context, "Caracteres inválidos removidos!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Nome do Evento") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { /* Mover para o próximo campo */ }),
+                    shape = RoundedCornerShape(8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Text(
-                    text = "Antes de Prosseguirmos...",
-                    fontSize = 36.sp,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                Text(
-                    text = "Por favor, insira o nome do evento a ser realizado",
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(bottom = 32.dp)
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-            }
-            TextField(
-                value = eventName,
-                onValueChange = { newValue ->
-                    val (filteredText, modified) = filtrarCaracteres(newValue.text)
-                    eventName = newValue.copy(text = filteredText)
-                    if (modified) {
-                        Toast.makeText(context, "Caracteres inválidos removidos!", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-                    .border(2.dp, Color(0xFF048CD4))
-                    .height(47.dp),
-                textStyle = TextStyle(
-                    textAlign = TextAlign.Center
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Send
-                ),
-                keyboardActions = KeyboardActions(
-                    onSend = {
+                OutlinedTextField(
+                    value = supervisorName,
+                    onValueChange = { newValue ->
+                        val (filteredText, modified) = filtrarCaracteres(newValue.text)
+                        supervisorName = newValue.copy(text = filteredText)
+                        if (modified) {
+                            Toast.makeText(context, "Caracteres inválidos removidos!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Nome do Supervisor") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
                         keyboardController?.hide()
-                        if (eventName.text.isNotEmpty()) {
+                        if (eventName.text.isNotEmpty() && supervisorName.text.isNotEmpty()) {
                             val sharedPref = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                             with(sharedPref.edit()) {
                                 putString("NOME_EVENTO", eventName.text)
+                                putString("NOME_SUPERVISOR", supervisorName.text)
                                 apply()
                             }
-                            onEventNameEntered(eventName.text)
+                            onEventNameEntered(eventName.text, supervisorName.text)
                         } else {
-                            Toast.makeText(context, "Por favor, insira um nome!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Por favor, preencha todos os campos!", Toast.LENGTH_SHORT).show()
                         }
-                    }
+                    }),
+                    shape = RoundedCornerShape(8.dp)
                 )
-            )
 
-            IconButton(
-                onClick = {
-                    if (eventName.text.isNotEmpty()) {
-                        val sharedPref = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-                        with(sharedPref.edit()) {
-                            putString("NOME_EVENTO", eventName.text)
-                            apply()
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    onClick = {
+                        if (eventName.text.isNotEmpty() && supervisorName.text.isNotEmpty()) {
+                            val sharedPref = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                            with(sharedPref.edit()) {
+                                putString("NOME_EVENTO", eventName.text)
+                                putString("NOME_SUPERVISOR", supervisorName.text)
+                                apply()
+                            }
+                            onEventNameEntered(eventName.text, supervisorName.text)
+                        } else {
+                            Toast.makeText(context, "Por favor, preencha todos os campos!", Toast.LENGTH_SHORT).show()
                         }
-                        onEventNameEntered(eventName.text)
-                    } else {
-                        Toast.makeText(context, "Por favor, insira um nome!", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                modifier = Modifier
-                    .size(80.dp)
-                    .background(Color(0xFF048CD4))
-                    .align(Alignment.BottomEnd)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowForwardIos,
-                    contentDescription = "Prosseguir",
-                    tint = Color.Black
-                )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF048cd4)) // Cor do botão modificada
+                ) {
+                    Text("Continuar", style = MaterialTheme.typography.titleMedium)
+                }
             }
         }
     }
 }
+
+
+
+
+
+
+

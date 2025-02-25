@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
@@ -50,6 +51,11 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import org.apache.poi.ss.usermodel.HorizontalAlignment
+import org.apache.poi.ss.usermodel.VerticalAlignment
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
@@ -330,9 +336,7 @@ class MainActivity : ComponentActivity() {
                 dismissButton = {
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Blue,
-                            contentColor = Color.White
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF048cd4)
                         )
                     ) {
                         Text("Cancelar")
@@ -344,53 +348,96 @@ class MainActivity : ComponentActivity() {
 
 
                                                             //----------Lógica do Export CSV-----//
-    private val createFileLauncher = registerForActivityResult(
-        ActivityResultContracts.CreateDocument("text/csv")
-    ) { uri ->
-        uri?.let {
-            exportToCSV(uri) // Passa a URI escolhida pelo usuário para a função de exportação
-        }
-    }
 
-    private fun exportToCSV(uri: Uri) {
+    private fun exportToExcel(uri: Uri) {
         val nomeDoEvento = getNomeDoEvento()
+        val supervisorName = getSupervisorName()
         if (nomeDoEvento.isEmpty()) return
-
-        val csvContent = qrCodeHistory.joinToString("\n") { qrCodeData ->
-            "${nomeDoEvento}, ${qrCodeData.codigo}, ${qrCodeData.nomePosto}, ${qrCodeData.qrContent ?: "N/A"}, ${qrCodeData.data}, ${qrCodeData.hora}, ${qrCodeData.latitude}, ${qrCodeData.longitude}"
-        }
 
         try {
             contentResolver.openOutputStream(uri)?.use { outputStream ->
-                OutputStreamWriter(outputStream).use { writer ->
-                    writer.write("EVENTO, CODIGO, NOME DO POSTO, COLABORADOR, MATRICULA, DATA, HORA, LATITUDE, LONGITUDE\n")
-                    writer.write(csvContent)
-                    qrCodeHistory.clear()
-                    val intent = Intent(this, EventNameActivity::class.java)
-                    startActivity(intent)
-                    finish() // Fecha a MainActivity
+                val workbook = XSSFWorkbook()
+                val sheet = workbook.createSheet("Roteiro de Ronda")
+
+                // Logomarca
+                val logo = BitmapFactory.decodeResource(resources, R.drawable.bsblogo)
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                logo.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+                val bytes = byteArrayOutputStream.toByteArray()
+                val pictureIdx = workbook.addPicture(bytes, XSSFWorkbook.PICTURE_TYPE_PNG)
+                val helper = workbook.creationHelper
+                val anchor = XSSFClientAnchor(0, 0, 0, 0, 0, 0, 2, 3) // Col2 = 2 para ocupar coluna B
+                val picture = sheet.createDrawingPatriarch().createPicture(anchor, pictureIdx)
+
+                // Textos da Empresa
+                sheet.createRow(1).createCell(1).setCellValue("Brasília Segurança S/A")
+                sheet.createRow(2).createCell(1).setCellValue("SIA SUL TRECHO 06 BLOCO A LOTES 5 15")
+                sheet.createRow(3).createCell(1).setCellValue("Brasília - DF")
+                sheet.createRow(1).createCell(2).setCellValue("CNPJ: 02.730.521/0001-20")
+                sheet.createRow(2).createCell(2).setCellValue("CEP: 71205060")
+                sheet.createRow(3).createCell(2).setCellValue("Tel: 61 3247 4777")
+
+                // Título "Roteiro de Ronda"
+                val titleRow = sheet.createRow(4)
+                val titleCell = titleRow.createCell(0)
+                titleCell.setCellValue("-----------------------\n ROTEIRO DE RONDA \n-------------------------")
+                val titleStyle = workbook.createCellStyle()
+                titleStyle.alignment = HorizontalAlignment.CENTER
+                titleStyle.verticalAlignment = VerticalAlignment.CENTER
+                titleCell.cellStyle = titleStyle
+
+                // Nome do Evento e Supervisor
+                sheet.createRow(5).createCell(0).setCellValue("Evento: $nomeDoEvento")
+                sheet.createRow(5).createCell(1).setCellValue("Supervisor: $supervisorName")
+
+                // Cabeçalho
+                val headerRow = sheet.createRow(6)
+                val headers = arrayOf("CODIGO", "NOME DO POSTO", "COLABORADOR", "MATRICULA", "DATA", "HORA", "LATITUDE", "LONGITUDE")
+                headers.forEachIndexed { index, header ->
+                    headerRow.createCell(index).setCellValue(header)
                 }
+
+                // Dados
+                qrCodeHistory.forEachIndexed { rowIndex, qrCodeData ->
+                    val dataRow = sheet.createRow(rowIndex + 7) // Ajuste o índice da linha
+                    dataRow.createCell(0).setCellValue(qrCodeData.codigo)
+                    dataRow.createCell(1).setCellValue(qrCodeData.nomePosto)
+                    dataRow.createCell(2).setCellValue(qrCodeData.qrContent ?: "N/A")
+                    dataRow.createCell(3).setCellValue("") // Colaborador (se necessário)
+                    dataRow.createCell(4).setCellValue(qrCodeData.data)
+                    dataRow.createCell(5).setCellValue(qrCodeData.hora)
+                    dataRow.createCell(6).setCellValue(qrCodeData.latitude)
+                    dataRow.createCell(7).setCellValue(qrCodeData.longitude)
+                }
+
+                workbook.write(outputStream)
+                Toast.makeText(this, "QR Codes exportados para ${nomeDoEvento}.xlsx", Toast.LENGTH_SHORT).show()
+                qrCodeHistory.clear()
+                val intent = Intent(this, EventNameActivity::class.java)
+                startActivity(intent)
+                finish()
             }
-            Toast.makeText(this, "QR Codes exportados para ${nomeDoEvento}.csv", Toast.LENGTH_SHORT)
-                .show()
         } catch (e: IOException) {
-            Log.e("exportToCSV", "Erro ao exportar CSV: ${e.message}")
-            Toast.makeText(
-                this,
-                "Erro ao exportar CSV. Verifique o log para mais detalhes.",
-                Toast.LENGTH_SHORT
-            ).show()
+            Log.e("exportToExcel", "Erro ao exportar Excel: ${e.message}")
+            Toast.makeText(this, "Erro ao exportar Excel. Verifique o log para mais detalhes.", Toast.LENGTH_SHORT).show()
         } catch (e: SecurityException) {
-            Log.e("exportToCSV", "Erro de permissão ao exportar CSV: ${e.message}")
-            Toast.makeText(this, "Erro de permissão ao exportar CSV.", Toast.LENGTH_SHORT).show()
+            Log.e("exportToExcel", "Erro de permissão ao exportar Excel: ${e.message}")
+            Toast.makeText(this, "Erro de permissão ao exportar Excel.", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Log.e("exportToCSV", "Erro inesperado ao exportar CSV: ${e.message}")
-            Toast.makeText(this, "Erro inesperado ao exportar CSV.", Toast.LENGTH_SHORT).show()
+            Log.e("exportToExcel", "Erro inesperado ao exportar Excel: ${e.message}")
+            Toast.makeText(this, "Erro inesperado ao exportar Excel.", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun promptSaveCsv() {
-        //Impedir que o usuário exporte sem ter lido nada
+    private val createExcelFileLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    ) { uri ->
+        uri?.let {
+            exportToExcel(uri)
+        }
+    }
+
+    private fun promptSaveExcel() {
         if (qrCodeHistory.isEmpty()) {
             Toast.makeText(this, "Não há dados para exportar!", Toast.LENGTH_SHORT).show()
             return
@@ -398,7 +445,7 @@ class MainActivity : ComponentActivity() {
 
         val nomeDoEvento = getNomeDoEvento()
         if (nomeDoEvento.isEmpty()) return
-        createFileLauncher.launch("${nomeDoEvento}.csv")
+        createExcelFileLauncher.launch("${nomeDoEvento}.xlsx")
     }
 
     private fun getNomeDoEvento(): String {
@@ -412,6 +459,10 @@ class MainActivity : ComponentActivity() {
             ).show()
         }
         return nomeDoEvento
+    }
+    private fun getSupervisorName(): String {
+        val sharedPref = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        return sharedPref.getString("NOME_SUPERVISOR", "") ?: ""
     }
 
     //---------------Barra Inferior de Opções-----------//
@@ -483,10 +534,10 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.size(48.dp)
                             )
                         }
-                        IconButton(onClick = { promptSaveCsv() }) {
+                        IconButton(onClick = { promptSaveExcel() }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "Exportar para CSV",
+                                contentDescription = "Exportar para Excel",
                                 tint = Color(0xFF048cd4),
                                 modifier = Modifier.size(48.dp)
                             )

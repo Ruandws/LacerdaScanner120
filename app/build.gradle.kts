@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.lacerdascanner120"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -71,4 +71,8 @@ dependencies {
         implementation (libs.zxing.android.embedded)
     }
 
+    dependencies {
+        implementation(libs.poi)
+        implementation("org.apache.poi:poi-ooxml:5.2.3")
+    }
 }
