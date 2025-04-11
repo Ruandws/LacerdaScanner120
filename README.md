@@ -12,7 +12,7 @@
 
 ## 🧭 Visão Geral
 
-O **LacerdaScanner120** é um app Android construído com **Kotlin** e **Jetpack Compose**, projetado para ler QR Codes, salvar automaticamente o histórico de leituras e exportar os dados em formato **`.csv`**.  
+O **LacerdaScanner120** é um app Android construído com **Kotlin** e **Jetpack Compose**, projetado para ler QR Codes, salvar automaticamente o histórico de leituras e exportar os dados em formato **`.csv e .xlsx`**.  
 Ideal para quem precisa registrar e organizar informações rapidamente, com praticidade e um toque moderno.
 
 ---
@@ -55,16 +55,6 @@ https://github.com/user-attachments/assets/a62078da-3083-48c0-a1d4-c6ead25d472c
 
 
 ---
-
-## 🚧 Funcionalidades Futuras
-
-- [ ] Atribuir título/descrição a cada QR Code
-- [ ] Filtro e busca por códigos no histórico
-- [ ] Compartilhamento direto do conteúdo
-- [ ] Backup automático para nuvem (Google Drive/OneDrive)
-
----
-
 ## 🤝 Contribuindo
 
 Contribuições são bem-vindas!  
@@ -79,5 +69,5 @@ Consulte o arquivo `LICENSE` para mais detalhes.
 
 ---
 
-### 🚀 Feito com 💻 por [Seu Nome ou @GitHub]
+### 🚀 Feito com 💻 por [Ruan Andrade]
 
