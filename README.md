@@ -64,8 +64,9 @@ Se você tiver ideias, sugestões ou quiser adicionar funcionalidades, fique à 
 
 ## 📄 Licença
 
-Distribuído sob a licença **MIT**.  
-Consulte o arquivo `LICENSE` para mais detalhes.
+Copyright (c) [2025] [Ruan Andrade]
+
+Este código é propriedade intelectual do autor e não pode ser copiado, distribuído ou utilizado sem autorização prévia.
 
 ---
 
