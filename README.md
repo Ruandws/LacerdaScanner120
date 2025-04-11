@@ -1,31 +1,83 @@
-📱 LacerdaScanner120 - Leitor de QR Codes com Histórico e Exportação
-Este aplicativo Android foi desenvolvido com Jetpack Compose e tem como principal objetivo ler QR Codes, armazenar o histórico de leituras e permitir a exportação dos dados em formato CSV. Ideal para usuários que precisam registrar códigos rapidamente e acessar essas informações de forma prática depois.
+<h1 align="center">📱 LacerdaScanner120</h1>
+<p align="center">Leitor de QR Codes com Histórico e Exportação para CSV</p>
 
-✨ Funcionalidades Principais
-📷 Leitura de QR Codes
-Utiliza a biblioteca ZXing para escanear QR Codes com a câmera do dispositivo, de forma simples e rápida.
+<p align="center">
+  <img src="https://img.shields.io/badge/Kotlin-1.9.0-purple?logo=kotlin" />
+  <img src="https://img.shields.io/badge/Jetpack%20Compose-✔️-blue?logo=android" />
+  <img src="https://img.shields.io/badge/ZXing-integrado-success?logo=barcode" />
+  <img src="https://img.shields.io/badge/License-MIT-green" />
+</p>
 
-📜 Histórico de Leituras
-Cada QR Code escaneado é automaticamente salvo em uma lista visível na tela principal, com atualização em tempo real.
+---
 
-🧹 Limpeza de Histórico
-Um botão dedicado permite limpar todos os registros do histórico com apenas um toque.
+## 🧭 Visão Geral
 
-📤 Exportação para CSV
-Os QR Codes lidos podem ser exportados para um arquivo .csv diretamente na pasta de documentos do dispositivo, permitindo fácil compartilhamento e armazenamento externo.
+O **LacerdaScanner120** é um app Android construído com **Kotlin** e **Jetpack Compose**, projetado para ler QR Codes, salvar automaticamente o histórico de leituras e exportar os dados em formato **`.csv`**.  
+Ideal para quem precisa registrar e organizar informações rapidamente, com praticidade e um toque moderno.
 
-🔒 Gerenciamento de Permissões
-O app solicita permissão de câmera de forma dinâmica e orienta o usuário em caso de recusa, garantindo uma experiência fluida e segura.
+---
 
-🛠️ Tecnologias Utilizadas
-Kotlin
-Jetpack Compose
-ZXing (Biblioteca de leitura de QR Code)
-Material 3
-Android SDK
+## ✨ Funcionalidades
 
-📁 Estrutura Simples e Intuitiva
-Interface moderna com Scaffold, BottomAppBar e LazyColumn + Gerenciamento de estado com mutableStateOf e mutableStateListOf + Armazenamento de dados diretamente no dispositivo + Código comentado e organizado para fácil manutenção e evolução
+| Função                     | Descrição                                                                 |
+|----------------------------|---------------------------------------------------------------------------|
+| 📷 Leitura de QR Codes     | Escaneia códigos em tempo real com a biblioteca ZXing.                   |
+| 📝 Histórico Automático    | Armazena os QR Codes lidos em uma lista atualizada dinamicamente.        |
+| 🧹 Limpeza de Histórico     | Permite apagar todos os registros com um clique.                         |
+| 📤 Exportação para CSV     | Salva o histórico em arquivo `.csv` no armazenamento local do dispositivo.|
+| 🔐 Permissões Dinâmicas    | Gerencia as permissões da câmera com tratamento elegante para o usuário. |
 
-https://github.com/user-attachments/assets/a62078da-3083-48c0-a1d4-c6ead25d472c
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Kotlin** • Linguagem moderna e concisa para Android  
+- **Jetpack Compose** • UI declarativa e reativa  
+- **ZXing (JourneyApps)** • Leitura de QR Codes  
+- **Material 3** • Componentes visuais modernos  
+- **Android SDK** • Integração com permissões e armazenamento
+
+---
+
+## 🧩 Estrutura do App
+
+- Interface construída com `Scaffold`, `BottomAppBar`, `LazyColumn`
+- Gerenciamento de estados via `mutableStateOf` e `mutableStateListOf`
+- Exportação de dados via `FileOutputStream` para `.csv`
+- Modularizado para fácil expansão e manutenção
+
+---
+
+## 📸 Captura de Tela
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a62078da-3083-48c0-a1d4-c6ead25d472c" width="300" alt="Screenshot do App">
+</p>
+
+---
+
+## 🚧 Funcionalidades Futuras
+
+- [ ] Atribuir título/descrição a cada QR Code
+- [ ] Filtro e busca por códigos no histórico
+- [ ] Compartilhamento direto do conteúdo
+- [ ] Backup automático para nuvem (Google Drive/OneDrive)
+
+---
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas!  
+Se você tiver ideias, sugestões ou quiser adicionar funcionalidades, fique à vontade para abrir uma issue ou pull request.  
+
+---
+
+## 📄 Licença
+
+Distribuído sob a licença **MIT**.  
+Consulte o arquivo `LICENSE` para mais detalhes.
+
+---
+
+### 🚀 Feito com 💻 por [Seu Nome ou @GitHub]
 
