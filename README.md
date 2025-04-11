@@ -48,11 +48,11 @@ Ideal para quem precisa registrar e organizar informações rapidamente, com pra
 
 ---
 
-## 📸 Captura de Tela
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/a62078da-3083-48c0-a1d4-c6ead25d472c" width="300" alt="Screenshot do App">
-</p>
+## 🎥 Demonstração em Vídeo
+
+https://github.com/user-attachments/assets/a62078da-3083-48c0-a1d4-c6ead25d472c
+
 
 ---
 
