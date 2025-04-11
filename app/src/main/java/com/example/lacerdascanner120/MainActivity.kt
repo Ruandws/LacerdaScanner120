@@ -39,7 +39,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -57,7 +56,6 @@ import org.apache.poi.xssf.usermodel.XSSFClientAnchor
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -143,11 +141,10 @@ class MainActivity : ComponentActivity() {
         qrContent: String?,
         codigo: String,
         nomePosto: String
-    ) { // qrContent como nullable
+    ) {
         if (qrContent == null) {
-            // Tratar o caso em que qrContent é nulo
             Log.e("salvarQrCode", "qrContent is null")
-            return // Sai da função
+            return
         }
 
         val currentDateTime = Calendar.getInstance().time
@@ -160,17 +157,23 @@ class MainActivity : ComponentActivity() {
             val latitude = location?.latitude?.toString() ?: "N/A"
             val longitude = location?.longitude?.toString() ?: "N/A"
 
-            val qrCodeData = QrCodeData( // Crie um objeto QrCodeData
+            // Separa os dados do QR code
+            val dadosQr = qrContent.split(",")
+            val colaborador = dadosQr.getOrNull(0)?.trim() ?: "N/A" // Colaborador (primeira parte)
+            val matricula = dadosQr.getOrNull(1)?.trim() ?: "N/A"   // Matrícula (segunda parte)
+
+            val qrCodeData = QrCodeData(
                 codigo = codigo,
                 nomePosto = nomePosto,
-                qrContent = qrContent, // Usa qrContent
+                colaborador = colaborador, // Usando colaborador separado
+                matricula = matricula,     // Usando matrícula separada
                 data = formattedDate,
                 hora = formattedTime,
                 latitude = latitude,
                 longitude = longitude
             )
 
-            qrCodeHistory.add(qrCodeData) // Adicione o objeto QrCodeData à lista
+            qrCodeHistory.add(qrCodeData)
         }
     }
 
@@ -182,7 +185,8 @@ class MainActivity : ComponentActivity() {
     data class QrCodeData(
         val codigo: String,
         val nomePosto: String,
-        val qrContent: String?,
+        val colaborador: String, // Adicionado campo colaborador
+        val matricula: String,   // Adicionado campo matrícula
         val data: String,
         val hora: String,
         val latitude: String,
@@ -399,11 +403,11 @@ class MainActivity : ComponentActivity() {
 
                 // Dados
                 qrCodeHistory.forEachIndexed { rowIndex, qrCodeData ->
-                    val dataRow = sheet.createRow(rowIndex + 7) // Ajuste o índice da linha
+                    val dataRow = sheet.createRow(rowIndex + 7)
                     dataRow.createCell(0).setCellValue(qrCodeData.codigo)
                     dataRow.createCell(1).setCellValue(qrCodeData.nomePosto)
-                    dataRow.createCell(2).setCellValue(qrCodeData.qrContent ?: "N/A")
-                    dataRow.createCell(3).setCellValue("") // Colaborador (se necessário)
+                    dataRow.createCell(2).setCellValue(qrCodeData.colaborador) // Usando colaborador
+                    dataRow.createCell(3).setCellValue(qrCodeData.matricula)   // Usando matrícula
                     dataRow.createCell(4).setCellValue(qrCodeData.data)
                     dataRow.createCell(5).setCellValue(qrCodeData.hora)
                     dataRow.createCell(6).setCellValue(qrCodeData.latitude)
@@ -579,8 +583,12 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "${qrCodeData.qrContent ?: "N/A"}",
-                                        fontWeight = FontWeight.Bold //
+                                        text = "Colaborador: ${qrCodeData.colaborador}",
+                                        modifier = Modifier.alpha(0.5f)
+                                    )
+                                    Text(
+                                        text = "Matrícula: ${qrCodeData.matricula}",
+                                        modifier = Modifier.alpha(0.5f)
                                     )
                                     Row {
                                         Text(
