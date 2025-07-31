@@ -55,6 +55,7 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:21.3.0")
     implementation ("androidx.activity:activity-ktx:1.6.0") // ou mais recente
     implementation ("androidx.core:core-ktx:1.9.0") // ou mais recente
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,0 +1,31 @@
+id,nome,anelId
+1001,Posto A - Caesb Central,101
+1002,Posto B - Caesb Central,101
+1003,Posto C - Caesb Central,101
+1004,Posto D - Caesb Sul,102
+1005,Posto E - Caesb Sul,102
+1006,Posto F - Caesb Sul,102
+2001,Posto G - HRAN,201
+2002,Posto H - HRPL,201
+2003,Posto I - HFA,201
+2004,Posto J - Santa Lúcia,202
+2005,Posto K - Daher Lago,202
+2006,Posto L - São Lucas,202
+3001,Posto M - Secretaria Adm,301
+3002,Posto N - Procuradoria,301
+3003,Posto O - Receita DF,301
+3004,Posto P - UBS 1,302
+3005,Posto Q - UBS 2,302
+3006,Posto R - SAMU,302
+4001,Posto S - Setor D,401
+4002,Posto T - Setor C,401
+4003,Posto U - Comercial Sul,401
+4004,Posto V - Expansão,402
+4005,Posto W - P Sul,402
+4006,Posto X - Guará II,402
+5001,Posto Y - Edifício Alfa,501
+5002,Posto Z - Shopping Beta,501
+5003,Posto AA - Torre Digital,501
+5004,Posto BB - Residencial Topázio,502
+5005,Posto CC - Condomínio Jade,502
+5006,Posto DD - Clube Esportivo,502
